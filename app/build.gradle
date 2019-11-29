@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.sunmi.readidcardemo"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 22
         versionCode 1
         versionName "1.0.1"
@@ -45,4 +45,5 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.2.0'
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
     implementation project(path: ':SunmiEID-SDK')
+    implementation project(path: ':PayLib-release')
 }
