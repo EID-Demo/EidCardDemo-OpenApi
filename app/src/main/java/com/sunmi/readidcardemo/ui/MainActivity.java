@@ -98,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     EditText mAppId;
     @BindView(R.id.app_key)
     EditText mAppKey;
-    @BindView(R.id.tv_read_time)
-    TextView mReadTime;
 
     private EidReader eid;
     private PendingIntent pi;
@@ -112,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     private boolean init;
     private int readType = 0;
     private IsoDep isodep;
-    private long timeMillis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,11 +294,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             case EidConstants.READ_CARD_SUCCESS:
                 closeNFCReader();//电子身份证需要关闭
                 Log.e("TAG", "正在获取身份信息，请稍等...");
-                long rTime = System.currentTimeMillis() - timeMillis;
-                runOnUiThread(() -> {
-                    mState.setText("正在获取身份信息，请稍等...");
-                    mReadTime.setText(mReadTime.getText().toString() + "读卡：" + rTime + "ms 请求解码：");
-                });
                 File file = new File(fileNameBase, "zp.bmp");
                 if (file.exists()) {
                     file.deleteOnExit();
@@ -356,17 +348,10 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                     @Override
                     public void onError(Throwable e) {
                         mState.setText("身份证解析失败：" + e.getMessage());
-                        if (mReadTime.getText().toString().endsWith("ms")) {
-                            long rTine = System.currentTimeMillis() - timeMillis;
-                            mReadTime.setText(mReadTime.getText().toString() + rTine + "ms");
-                        }
-                        e.printStackTrace();
                     }
 
                     @Override
                     public void onNext(ResultInfo result) {
-                        long rTine = System.currentTimeMillis() - timeMillis;
-                        mReadTime.setText(mReadTime.getText().toString() + rTine + "ms");
                         if (result != null && result.code == 0) {
                             Log.i(TAG, "onNext: " + result.toString());
                             mState.setText("身份证解析成功，业务状态：" + result.code + ":" + result.msg);
@@ -419,7 +404,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         mEnd.setText("有效结束时间：");
         mAppEidCode.setText("appeidcode：");
         mDn.setText("DN码：");
-        mReadTime.setText("readTime：");
         mPic.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
     }
 
@@ -458,8 +442,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (init) {
-            timeMillis = System.currentTimeMillis();
-            mReadTime.setText("readTime：");
             Log.d(TAG, "onNewIntent: " + intent.getAction());
             if (readType == IDCardType.CARD || readType == IDCardType.IDCARD) {
                 Log.d(TAG, "onNewIntent: 普通身份证或通用类型");
