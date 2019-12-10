@@ -566,6 +566,22 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         public void onError(final int code, final String msg) throws RemoteException {
             Log.e(TAG, "check card error,code:" + code + "message:" + msg);
         }
+
+        @Override
+        public void findICCardEx(Bundle bundle) throws RemoteException {
+            Log.e(TAG, "findICCard, bundle:" + bundle);
+        }
+
+        @Override
+        public void findRFCardEx(Bundle bundle) throws RemoteException {
+            Log.e(TAG, "findRFCard, bundle:" + bundle);
+            readCard();
+        }
+
+        @Override
+        public void onErrorEx(Bundle bundle) throws RemoteException {
+            Log.e(TAG, "check card error, bundle:" + bundle);
+        }
     };
 
     private void readCard() {
