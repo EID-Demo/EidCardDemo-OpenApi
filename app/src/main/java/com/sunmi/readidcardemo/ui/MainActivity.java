@@ -575,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         @Override
         public void findRFCardEx(Bundle bundle) throws RemoteException {
             Log.e(TAG, "findRFCard, bundle:" + bundle);
-            readCard();
+            //readCard();
         }
 
         @Override
