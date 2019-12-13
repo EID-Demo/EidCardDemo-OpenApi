@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sunmi.readidcardemo">
 
+    <!-- 金融设备非接卡读卡权限 -->
+    <uses-permission android:name="com.sunmi.perm.CONTACTLESS_CARD" />
+
     <application
         android:name=".IApp"
         android:allowBackup="true"

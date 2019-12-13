@@ -13,6 +13,11 @@ android {
     lintOptions {
         abortOnError false
     }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["src/main/jniLibs"]
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false

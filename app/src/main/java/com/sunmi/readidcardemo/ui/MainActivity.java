@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.nfc.NfcAdapter;
@@ -25,11 +26,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
-import com.sunmi.eidlibrary.EidPic;
 import com.sunmi.eidlibrary.EidReadCardCallBack;
 import com.sunmi.eidlibrary.EidReader;
 import com.sunmi.eidlibrary.EidSDK;
@@ -43,8 +41,9 @@ import com.sunmi.readidcardemo.bean.ResultInfo;
 import com.sunmi.readidcardemo.net.ReadCardServer;
 import com.sunmi.readidcardemo.utils.ByteUtils;
 import com.sunmi.readidcardemo.utils.Utils;
+import com.zkteco.android.IDReader.IDCardPhoto;
+import com.zkteco.android.IDReader.IDPhotoHelper;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -103,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     private PendingIntent pi;
     private NfcAdapter nfcAdapter;
 
-    private String fileNameBase = "/sdcard/eidSunmi";
-
     private String appid = "请输入您的appId";
     private String appkey = "请输入您的appKey";
     private boolean init;
@@ -136,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         Log.e("TAG", "initNfc  1 ");
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter == null) {
-            mState.setText("设备不支持NFC");
+            mState.setText("设备不支持NFC，金融设备请使金融读卡");
             return;
         }
         if (!nfcAdapter.isEnabled()) {
@@ -275,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
 
     private void initEidReader() {
         try {
-            EidPic.init(this, fileNameBase);
             eid = EidSDK.getEidReaderForNfc(1, this);
         } catch (Exception e) {
             mState.setText(e.getMessage());
@@ -294,10 +290,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             case EidConstants.READ_CARD_SUCCESS:
                 closeNFCReader();//电子身份证需要关闭
                 Log.e("TAG", "正在获取身份信息，请稍等...");
-                File file = new File(fileNameBase, "zp.bmp");
-                if (file.exists()) {
-                    file.deleteOnExit();
-                }
                 //通过card_id请求识读卡片的信息
                 Log.d(TAG, "onCallData: reqId:" + msg);
                 runOnUiThread(() -> mRequestId.setText("reqId:" + msg));
@@ -499,13 +491,15 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     }
 
     private void decodePic(String imgBytes) {
-        EidPic.decodePic(imgBytes);
-        Glide.with(MainActivity.this)
-                .load(new File(fileNameBase, "zp.bmp"))
-                .skipMemoryCache(true)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(mPic);
+        try {
+            Bitmap photo = IDCardPhoto.getIDCardPhoto(IDPhotoHelper.hexStr2Bytes(imgBytes));
+            mPic.setImageBitmap(photo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    // ---------------------------------------------- 金融设备读卡 ------------------------------
 
     private void connectPayService() {
         if (Utils.isAppInstalled(this, "com.sunmi.pay.hardware_v3")) {
