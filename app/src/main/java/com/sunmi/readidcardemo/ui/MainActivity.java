@@ -202,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == 81 && grantResults != null && grantResults.length > 0) {
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {// Permission Granted
-//                finish();
                 Toast.makeText(this, "无所需权限,请在设置中添加权限", Toast.LENGTH_LONG).show();
             }
         }
