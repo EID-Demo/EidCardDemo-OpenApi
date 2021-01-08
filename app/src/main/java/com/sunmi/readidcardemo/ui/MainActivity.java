@@ -102,8 +102,8 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     private PendingIntent pi;
     private NfcAdapter nfcAdapter;
 
-    private String appid = "请输入您的appId";
-    private String appkey = "请输入您的appKey";
+    public static String appid = "af5878e3b91d0cda571558a6b6622ff5";
+    public static String appkey = "5ef18611e67e1d665b80c137ff7ab6bd";
     private boolean init;
     private int readType = 0;
     private IsoDep isodep;
@@ -403,6 +403,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         menu.add(1, 1, 1, "通用卡类型");
         menu.add(2, 2, 2, "身份证");
         menu.add(3, 3, 3, "电子身份证");
+        menu.add(4, 4, 4, "旅行证件");
         return true;
     }
 
@@ -423,6 +424,10 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             case 3:
                 readType = IDCardType.ECCARD;
                 mState.setText("请读电子身份证");
+                break;
+            case 4:
+                //旅行证件
+                startActivity(new Intent(this, TestTravelActivity.class));
                 break;
         }
         return true;

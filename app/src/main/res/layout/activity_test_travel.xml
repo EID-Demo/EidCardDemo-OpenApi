@@ -1,0 +1,233 @@
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="商米SDK.Ver:x, 固件SDK.Ver:x" />
+
+        <TextView
+            android:id="@+id/state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="请读卡" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <EditText
+                android:id="@+id/et_id_num"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="输入证件号"
+                android:textColor="@android:color/black"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/et_birthday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="输入出生日期（格式：950328）"
+                android:textColor="@android:color/black"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/et_validity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="输入有效期（格式：950328）"
+                android:textColor="@android:color/black"
+                android:textSize="15sp" />
+
+            <CheckBox
+                android:id="@+id/cb_is_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="是否读取照片" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/init"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="SDK init" />
+
+                <Button
+                    android:id="@+id/read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="清除" />
+
+                <Button
+                    android:id="@+id/delay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="延时检测" />
+
+                <Button
+                    android:id="@+id/destroy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="SDK销毁" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/request_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="reqId:"
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tv_read_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="readTime:"
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="姓名："
+                    android:textColor="@android:color/black" />
+
+                <TextView
+                    android:id="@+id/gender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="性别："
+                    android:textColor="@android:color/black" />
+
+                <TextView
+                    android:id="@+id/race"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="民族："
+                    android:textColor="@android:color/black" />
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="出生年月："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="地址："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="身份证号码："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+
+                <TextView
+                    android:id="@+id/office"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="签发机关："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="有效起始时间："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="有效结束时间："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/appeidcode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="appeidcode："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/dn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DN码："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tv_pic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="图像数据："
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>
