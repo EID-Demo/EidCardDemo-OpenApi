@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
@@ -19,11 +21,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,7 +67,7 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
     @BindView(R.id.race)
     TextView mRace;
     @BindView(R.id.tv_pic)
-    TextView mPic;
+    ImageView mPic;
     @BindView(R.id.date)
     TextView mDate;
     @BindView(R.id.address)
@@ -472,12 +476,29 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
                     mEnd.setText(String.format("有效结束时间：%s", info.endTime));
                     mAppEidCode.setText(String.format("appeidcode：%s", data.appeidcode));
                     mDn.setText(String.format("DN码：%s", data.dn));
-                    mPic.setText(String.format("图像数据：%s", data.picture));
+                    if (data != null && !TextUtils.isEmpty(data.picture)) {
+                        Bitmap bt = base64ToBitmap(data.picture);
+                        if (bt != null) {
+                            mPic.setVisibility(View.VISIBLE);
+                            mPic.setImageBitmap(bt);
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    /**
+     * base64תΪbitmap
+     *
+     * @param base64Data
+     * @return
+     */
+    public static Bitmap base64ToBitmap(String base64Data) {
+        byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
     @SuppressLint("SetTextI18n")
@@ -496,7 +517,7 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
         mAppEidCode.setText("appeidcode：");
         mDn.setText("DN码：");
         mReadTime.setText("readTime：");
-        mPic.setText("图像数据：");
+        mPic.setVisibility(View.GONE);
     }
 
 }
