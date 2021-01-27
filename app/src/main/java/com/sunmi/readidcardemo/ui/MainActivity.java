@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     public static String appid = "af5878e3b91d0cda571558a6b6622ff5";
     public static String appkey = "5ef18611e67e1d665b80c137ff7ab6bd";
     private boolean init;
-    private int readType = 0;
+    private int readType = IDCardType.IDCARD;
     private IsoDep isodep;
 
     @Override
@@ -334,7 +334,8 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<ResultInfo>() {
                     @Override
-                    public void onCompleted() {}
+                    public void onCompleted() {
+                    }
 
                     @Override
                     public void onError(Throwable e) {
@@ -400,15 +401,15 @@ public class MainActivity extends AppCompatActivity implements EidCall {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(1, 1, 1, "通用卡类型");
-        menu.add(2, 2, 2, "身份证");
+//        menu.add(1, 1, 1, "通用卡类型");
+        menu.add(2, 2, 2, "身份证等ID卡");
         menu.add(3, 3, 3, "电子身份证");
         menu.add(4, 4, 4, "旅行证件");
         return true;
     }
 
     /**
-     * 读取类型 通用类型{@link IDCardType#CARD}，身份证{@link IDCardType#IDCARD}，电子证照{@link IDCardType#ECCARD}
+     * 读取类型 通用类型{@link IDCardType#CARD}，身份证等ID卡{@link IDCardType#IDCARD}，电子证照{@link IDCardType#ECCARD}
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -419,11 +420,11 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 break;
             case 2:
                 readType = IDCardType.IDCARD;
-                mState.setText("请读身份证");
+                mState.setText("请读身份证等ID卡");
                 break;
             case 3:
                 readType = IDCardType.ECCARD;
-                mState.setText("请读电子身份证");
+                mState.setText("请读电子证照");
                 break;
             case 4:
                 //旅行证件
@@ -443,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 Log.d(TAG, "onNewIntent: 普通身份证或通用类型");
                 eid.nfcReadCard(intent);
             } else if (readType == IDCardType.ECCARD) {
-                Log.d(TAG, "onNewIntent: 电子身份证");
+                Log.d(TAG, "onNewIntent: 电子证照");
                 try {
                     Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                     try {
