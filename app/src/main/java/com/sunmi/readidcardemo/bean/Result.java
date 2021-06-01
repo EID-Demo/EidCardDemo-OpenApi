@@ -21,12 +21,19 @@ public class Result implements Serializable {
     public Data data;
 
     public class Data {
+
         public String info = "";
+
+        public String sub_code;//5001 权限错误：原因可能是添加了白名单
+
+        public String sub_msg;
 
         @Override
         public String toString() {
             return "Data{" +
                     "info='" + info + '\'' +
+                    ", sub_code='" + sub_code + '\'' +
+                    ", sub_msg='" + sub_msg + '\'' +
                     '}';
         }
     }
