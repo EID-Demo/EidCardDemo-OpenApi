@@ -24,7 +24,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -56,10 +55,6 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
     TextView mState;
     @BindView(R.id.version)
     TextView mVer;
-    @BindView(R.id.read)
-    Button mRead;
-    @BindView(R.id.delay)
-    Button mDelay;
     @BindView(R.id.name)
     TextView mName;
     @BindView(R.id.gender)
@@ -274,19 +269,9 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
         }
     }
 
-    @OnClick({R.id.read, R.id.delay, R.id.init, R.id.destroy})
+    @OnClick({R.id.init, R.id.clear, R.id.delay, R.id.destroy})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.read:
-                clearData();
-                break;
-            case R.id.delay:
-                if (init) {
-                    EidSDK.getDelayTime(this, 3);
-                } else {
-                    setEditText(mState, "请先初始化SDK");
-                }
-                break;
             case R.id.init:
                 if (appid == null || appid.isEmpty()) {
                     Toast.makeText(this, "请检查appid", Toast.LENGTH_SHORT).show();
@@ -304,6 +289,17 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
                     setEditText(mState, "e.getMessage()");
                 }
                 break;
+            case R.id.clear:
+                clearData();
+                break;
+            case R.id.delay:
+                if (init) {
+                    EidSDK.getDelayTime(this, 3);
+                } else {
+                    setEditText(mState, "请先初始化SDK");
+                }
+                break;
+
             case R.id.destroy:
                 if (init) {
                     EidSDK.destroy();
@@ -420,43 +416,6 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
                 }
             }
         });
-//        ReadCardServer.getInstance()
-//                .parse(id, appid, appkey)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Subscriber<ResultInfo>() {
-//                    @Override
-//                    public void onCompleted() {
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        setEditText(mState, "身份证解析失败：" + e.getMessage());
-//                        if (mReadTime.getText().toString().endsWith("ms")) {
-//                            long rTine = System.currentTimeMillis() - timeMillis;
-//                            mReadTime.setText(mReadTime.getText().toString() + rTine + "ms");
-//                        }
-//                        e.printStackTrace();
-//                    }
-//
-//                    @Override
-//                    public void onNext(ResultInfo result) {
-//                        long rTine = System.currentTimeMillis() - timeMillis;
-//                        mReadTime.setText(mReadTime.getText().toString() + rTine + "ms");
-//                        if (result != null && result.code == 0) {
-//                            setEditText(mState, "身份证解析成功，业务状态：" + result.code + ":" + result.msg);
-//                            Log.i(TAG, "onNext: " + result.toString());
-//                            parseData(result);
-//                        } else {
-//                            if (result != null) {
-//                                Log.i(TAG, "onNext: " + result.toString());
-//                                setEditText(mState, "身份证解析失败，请重试(" + result.code + ":" + result.msg + ")");
-//                            } else {
-//                                setEditText(mState, "身份证解析失败，请重试");
-//                            }
-//                        }
-//                    }
-//                });
     }
 
     private void parseData(final ResultInfo data) {

@@ -85,14 +85,14 @@
                     android:text="SDK init" />
 
                 <Button
-                    android:id="@+id/button"
+                    android:id="@+id/finance_read_card"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="金融读卡" />
 
                 <Button
-                    android:id="@+id/read"
+                    android:id="@+id/clear"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
@@ -121,6 +121,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="request_id："
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tv_read_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="readTime:"
             android:textColor="@android:color/black"
             android:textSize="15sp" />
 

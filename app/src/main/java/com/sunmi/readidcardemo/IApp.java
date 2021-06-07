@@ -14,18 +14,12 @@ public class IApp extends Application implements EidCall {
     @Override
     public void onCreate() {
         super.onCreate();
-        /*try {
-            EidSDK.init(this, "应用appID", this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
     }
 
 
     @Override
     public void onTerminate() {
         super.onTerminate();
-        //EidSDK.destroy();
     }
 
     @Override

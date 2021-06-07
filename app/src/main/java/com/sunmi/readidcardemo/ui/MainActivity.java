@@ -16,16 +16,17 @@ import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidReadCardCallBack;
@@ -38,11 +39,9 @@ import com.sunmi.pay.hardware.aidlv2.readcard.CheckCardCallbackV2;
 import com.sunmi.readidcardemo.R;
 import com.sunmi.readidcardemo.bean.BaseInfo;
 import com.sunmi.readidcardemo.bean.ResultInfo;
-import com.sunmi.readidcardemo.net.ReadCardServer;
 import com.sunmi.readidcardemo.utils.ByteUtils;
 import com.sunmi.readidcardemo.utils.Utils;
 import com.zkteco.android.IDReader.IDCardPhoto;
-import com.zkteco.android.IDReader.IDPhotoHelper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -51,22 +50,15 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import sunmi.paylib.SunmiPayKernel;
 
 public class MainActivity extends AppCompatActivity implements EidCall {
-    public static final String TAG = "hell0";
+    public static final String TAG = "MainActivity";
 
     @BindView(R.id.state)
     TextView mState;
     @BindView(R.id.version)
     TextView mVer;
-    @BindView(R.id.read)
-    Button mRead;
-    @BindView(R.id.delay)
-    Button mDelay;
     @BindView(R.id.name)
     TextView mName;
     @BindView(R.id.gender)
@@ -97,13 +89,14 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     EditText mAppId;
     @BindView(R.id.app_key)
     EditText mAppKey;
-
+    @BindView(R.id.tv_read_time)
+    TextView mReadTime;
     private EidReader eid;
     private PendingIntent pi;
     private NfcAdapter nfcAdapter;
 
-    public static String appid = "af5878e3b91d0cda571558a6b6622ff5";
-    public static String appkey = "5ef18611e67e1d665b80c137ff7ab6bd";
+    public static String appid = "0be4fe0ce423fa332546280e13a5132f";
+    public static String appkey = "bb2b161e270636de647f858151a4378f";
     private boolean init;
     private int readType = IDCardType.IDCARD;
     private IsoDep isodep;
@@ -119,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         initNfc();
         showVersion();
         connectPayService();
-        //initEidReader();
     }
 
     private void showVersion() {
@@ -207,20 +199,9 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         }
     }
 
-    @OnClick({R.id.read, R.id.delay, R.id.init, R.id.destroy, R.id.button})
+    @OnClick({R.id.init, R.id.finance_read_card, R.id.clear, R.id.delay, R.id.destroy})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.read:
-                clearData();
-                break;
-            case R.id.delay:
-                if (init) {
-                    EidSDK.getDelayTime(this, 3);
-                } else {
-                    mState.setText("请先初始化SDK");
-                    Toast.makeText(this, "请先初始化SDK", Toast.LENGTH_SHORT).show();
-                }
-                break;
             case R.id.init:
                 appid = mAppId.getText().toString();
                 appkey = mAppKey.getText().toString();
@@ -233,21 +214,14 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                     return;
                 }
                 try {
+                    //初始化；初始化成功后回调onCallData  code=1
+//                    EidSDK.setDebug(EidSDK.TEST_MODE);//设置就走测试环境，不设置走正式环境
                     EidSDK.init(getApplicationContext(), appid, this);
                 } catch (Exception e) {
                     mState.setText(e.getMessage());
                 }
                 break;
-            case R.id.destroy:
-                if (init) {
-                    EidSDK.destroy();
-                    init = false;
-                } else {
-                    mState.setText("请先初始化SDK");
-                    Toast.makeText(this, "请先初始化SDK", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case R.id.button:
+            case R.id.finance_read_card:
                 if (init) {
                     if (Utils.isAppInstalled(this, "com.sunmi.pay.hardware_v3")) {
                         try {
@@ -266,6 +240,28 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                     Toast.makeText(this, "请先初始化SDK", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case R.id.clear:
+                clearData();
+                break;
+            case R.id.delay:
+                if (init) {
+                    EidSDK.getDelayTime(this, 3);
+                } else {
+                    mState.setText("请先初始化SDK");
+                    Toast.makeText(this, "请先初始化SDK", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case R.id.destroy:
+                if (init) {
+                    EidSDK.destroy();
+                    init = false;
+                } else {
+                    mState.setText("请先初始化SDK");
+                    Toast.makeText(this, "请先初始化SDK", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
         }
     }
 
@@ -281,31 +277,25 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     public void onCallData(int code, String msg) {
         switch (code) {
             case EidConstants.READ_CARD_START:
-                runOnUiThread(() -> {
-                    mState.setText("开始读卡，请勿移动");
-                });
                 Log.i(TAG, "开始读卡，请勿移动");
+                setEditText(mState, "开始读卡，请勿移动");
                 break;
             case EidConstants.READ_CARD_SUCCESS:
                 closeNFCReader();//电子身份证需要关闭
                 Log.e("TAG", "正在获取身份信息，请稍等...");
                 //通过card_id请求识读卡片的信息
                 Log.d(TAG, "onCallData: reqId:" + msg);
-                runOnUiThread(() -> mRequestId.setText("reqId:" + msg));
+                setEditText(mRequestId, "reqId:" + msg);
                 getIDCardInfo(msg);
                 break;
             case EidConstants.READ_CARD_FAILED:
                 closeNFCReader();//电子身份证需要关闭
                 Log.i(TAG, String.format(Locale.getDefault(), "读卡错误,请重新贴卡：%s", msg));
-                runOnUiThread(() -> {
-                    mState.setText(String.format(Locale.getDefault(), "读卡错误,请重新贴卡：%s", msg));
-                });
+                setEditText(mState, String.format(Locale.getDefault(), "读卡错误,请重新贴卡：%s", msg));
                 break;
             case EidConstants.READ_CARD_DELAY:
-                Log.e("TAG", String.format(Locale.getDefault(), "延迟 %sms", msg));
-                runOnUiThread(() -> {
-                    mState.setText(String.format(Locale.getDefault(), "延迟 %sms", msg));
-                });
+                Log.i(TAG, String.format(Locale.getDefault(), "延迟 %sms", msg));
+                setEditText(mState, String.format(Locale.getDefault(), "延迟 %sms", msg));
                 break;
             //初始化成功
             case 1:
@@ -316,9 +306,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             case 4002://解析域名异常
             case 4003://网络连接异常
             default:
-                runOnUiThread(() -> {
-                    mState.setText(code + ":" + msg);
-                });
+                setEditText(mState, code + ":" + msg);
                 break;
         }
     }
@@ -328,40 +316,42 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             runOnUiThread(() -> Toast.makeText(this, "请先初始化", Toast.LENGTH_SHORT).show());
             return;
         }
-        ReadCardServer.getInstance()
-                .parse(id, appid, appkey)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ResultInfo>() {
-                    @Override
-                    public void onCompleted() {
+        final long reqStart = System.currentTimeMillis();
+        EidSDK.getIDCardInfo(id, appid, appkey, new EidCall() {
+            @Override
+            public void onCallData(int code, String msg) {
+                if (code == 10000) {
+//                    Log.e(TAG, "888888 time = " + (System.currentTimeMillis() - reqStart));
+                    ResultInfo result = new Gson().fromJson(msg, ResultInfo.class);
+//                    Log.e(TAG, "888888 resultcode 200,result = " + result.toString());
+                    setEditText(mReadTime, String.format(Locale.getDefault(), "%s%dms", mReadTime.getText().toString(),
+                            (System.currentTimeMillis() - reqStart)));
+                    if (result.code == 0) {
+                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
+                        parseData(result);
+                    } else {
+                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
                     }
+                } else {
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", code, msg));
+                }
+            }
+        });
+    }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        mState.setText("身份证解析失败：" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ResultInfo result) {
-                        if (result != null && result.code == 0) {
-                            Log.i(TAG, "onNext: " + result.toString());
-                            mState.setText("身份证解析成功，业务状态：" + result.code + ":" + result.msg);
-                            parseData(result);
-                        } else {
-                            if (result != null) {
-                                Log.i(TAG, "onNext: " + result.toString());
-                                mState.setText("身份证解析失败，请重试(" + result.code + ":" + result.msg + ")");
-                            } else {
-                                mState.setText("身份证解析失败，请重试");
-                            }
-                        }
-                    }
-                });
+    private void setEditText(final TextView textView, final String text) {
+        Log.i(TAG, text);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(text);
+            }
+        });
     }
 
     private void parseData(ResultInfo data) {
         try {
+            if (data == null) return;
             BaseInfo info = data.info;
             mName.setText(String.format("姓名：%s", info.name));
             mGender.setText(String.format("性别：%s", info.sex));
@@ -374,8 +364,11 @@ public class MainActivity extends AppCompatActivity implements EidCall {
             mEnd.setText(String.format("有效结束时间：%s", info.endTime));
             mAppEidCode.setText(String.format("appeidcode：%s", data.appeidcode));
             mDn.setText(String.format("DN码：%s", data.dn));
-            String picture = data.picture;
-            decodePic(picture);
+            if (!TextUtils.isEmpty(data.picture)) {
+                Bitmap photo = IDCardPhoto.getIDCardPhoto(data.picture);
+                mPic.setVisibility(View.VISIBLE);
+                mPic.setImageBitmap(photo);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -495,14 +488,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         }
     }
 
-    private void decodePic(String imgBytes) {
-        try {
-            Bitmap photo = IDCardPhoto.getIDCardPhoto(IDPhotoHelper.hexStr2Bytes(imgBytes));
-            mPic.setImageBitmap(photo);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     // ---------------------------------------------- 金融设备读卡 ------------------------------
 

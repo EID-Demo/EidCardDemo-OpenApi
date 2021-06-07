@@ -6,8 +6,8 @@ android {
         applicationId "com.sunmi.readidcardemo"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.0.3"
+        versionCode 4
+        versionName "1.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
@@ -58,4 +58,9 @@ dependencies {
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
     implementation project(path: ':SunmiEID-SDK')
     implementation project(path: ':PayLib-release')
+
+    /**
+     * 图片解码库
+     */
+    implementation 'com.github.cloud-reader-jinlian:cloudreader-picture:v1.0.0'
 }
