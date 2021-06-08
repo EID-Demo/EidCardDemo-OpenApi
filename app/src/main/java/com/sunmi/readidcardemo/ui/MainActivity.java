@@ -214,8 +214,9 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                     return;
                 }
                 try {
+                    //设置就走测试环境，不设置走正式环境
+                    EidSDK.setDebug(EidSDK.TEST_MODE);
                     //初始化；初始化成功后回调onCallData  code=1
-//                    EidSDK.setDebug(EidSDK.TEST_MODE);//设置就走测试环境，不设置走正式环境
                     EidSDK.init(getApplicationContext(), appid, this);
                 } catch (Exception e) {
                     mState.setText(e.getMessage());
@@ -350,28 +351,31 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     }
 
     private void parseData(ResultInfo data) {
-        try {
-            if (data == null) return;
-            BaseInfo info = data.info;
-            mName.setText(String.format("姓名：%s", info.name));
-            mGender.setText(String.format("性别：%s", info.sex));
-            mRace.setText(String.format("民族：%s", info.nation));
-            mDate.setText(String.format("出生年月：%s", info.birthDate));
-            mAddress.setText(String.format("地址：%s", info.address));
-            mNumber.setText(String.format("身份证号码：%s", info.idnum));
-            mOffice.setText(String.format("签发机关：%s", info.signingOrganization));
-            mStart.setText(String.format("有效起始时间：%s", info.beginTime));
-            mEnd.setText(String.format("有效结束时间：%s", info.endTime));
-            mAppEidCode.setText(String.format("appeidcode：%s", data.appeidcode));
-            mDn.setText(String.format("DN码：%s", data.dn));
-            if (!TextUtils.isEmpty(data.picture)) {
-                Bitmap photo = IDCardPhoto.getIDCardPhoto(data.picture);
-                mPic.setVisibility(View.VISIBLE);
-                mPic.setImageBitmap(photo);
+        if (data == null) return;
+        runOnUiThread(() -> {
+            try {
+                BaseInfo info = data.info;
+                mName.setText(String.format("姓名：%s", info.name));
+                mGender.setText(String.format("性别：%s", info.sex));
+                mRace.setText(String.format("民族：%s", info.nation));
+                mDate.setText(String.format("出生年月：%s", info.birthDate));
+                mAddress.setText(String.format("地址：%s", info.address));
+                mNumber.setText(String.format("身份证号码：%s", info.idnum));
+                mOffice.setText(String.format("签发机关：%s", info.signingOrganization));
+                mStart.setText(String.format("有效起始时间：%s", info.beginTime));
+                mEnd.setText(String.format("有效结束时间：%s", info.endTime));
+                mAppEidCode.setText(String.format("appeidcode：%s", data.appeidcode));
+                mDn.setText(String.format("DN码：%s", data.dn));
+                if (!TextUtils.isEmpty(data.picture)) {
+                    Bitmap photo = IDCardPhoto.getIDCardPhoto(data.picture);
+                    mPic.setVisibility(View.VISIBLE);
+                    mPic.setImageBitmap(photo);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
+
     }
 
     @SuppressLint("SetTextI18n")
