@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 }
                 try {
                     //设置就走测试环境，不设置走正式环境
-                    EidSDK.setDebug(EidSDK.TEST_MODE);
+//                    EidSDK.setDebug(EidSDK.TEST_MODE);
                     //初始化；初始化成功后回调onCallData  code=1
                     EidSDK.init(getApplicationContext(), appid, this);
                 } catch (Exception e) {
