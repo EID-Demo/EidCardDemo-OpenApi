@@ -9,3 +9,6 @@
 .idea/
 /captures
 .externalNativeBuild
+/SunmiEID-SDK/build/
+/PayLib-release/build/
+
