@@ -13,9 +13,6 @@ import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.os.RemoteException;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -26,7 +23,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidReadCardCallBack;
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
 
     public static String appid = "0be4fe0ce423fa332546280e13a5132f";
     public static String appkey = "bb2b161e270636de647f858151a4378f";
+
     private boolean init;
     private int readType = IDCardType.IDCARD;
     private IsoDep isodep;
@@ -283,11 +284,13 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 break;
             case EidConstants.READ_CARD_SUCCESS:
                 closeNFCReader();//电子身份证需要关闭
-                Log.e("TAG", "正在获取身份信息，请稍等...");
+
+                Log.d(TAG, "process-------->READ_CARD_SUCCESS\n" +
+                        "解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
                 //通过card_id请求识读卡片的信息
                 Log.d(TAG, "onCallData: reqId:" + msg);
                 setEditText(mRequestId, "reqId:" + msg);
-                getIDCardInfo(msg);
+                setEditText(mState, "读卡成功，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
                 break;
             case EidConstants.READ_CARD_FAILED:
                 closeNFCReader();//电子身份证需要关闭
@@ -310,34 +313,6 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 setEditText(mState, code + ":" + msg);
                 break;
         }
-    }
-
-    private void getIDCardInfo(String id) {
-        if (appid == null || appkey == null || !init) {
-            runOnUiThread(() -> Toast.makeText(this, "请先初始化", Toast.LENGTH_SHORT).show());
-            return;
-        }
-        final long reqStart = System.currentTimeMillis();
-        EidSDK.getIDCardInfo(id, appid, appkey, new EidCall() {
-            @Override
-            public void onCallData(int code, String msg) {
-                if (code == 10000) {
-//                    Log.e(TAG, "888888 time = " + (System.currentTimeMillis() - reqStart));
-                    ResultInfo result = new Gson().fromJson(msg, ResultInfo.class);
-//                    Log.e(TAG, "888888 resultcode 200,result = " + result.toString());
-                    setEditText(mReadTime, String.format(Locale.getDefault(), "%s%dms", mReadTime.getText().toString(),
-                            (System.currentTimeMillis() - reqStart)));
-                    if (result.code == 0) {
-                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
-                        parseData(result);
-                    } else {
-                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
-                    }
-                } else {
-                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", code, msg));
-                }
-            }
-        });
     }
 
     private void setEditText(final TextView textView, final String text) {

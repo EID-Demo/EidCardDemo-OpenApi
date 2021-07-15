@@ -17,9 +17,6 @@ import android.nfc.tech.NfcF;
 import android.nfc.tech.NfcV;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -30,7 +27,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidReader;
@@ -347,12 +347,13 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
                 setEditText(mState, "开始读卡，请勿移动");
                 break;
             case EidConstants.READ_CARD_SUCCESS:
-                Log.d(TAG, "process-------->READ_CARD_SUCCESS");
+                Log.d(TAG, "process-------->READ_CARD_SUCCESS\n" +
+                        "解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
                 setEditText(mState, "正在获取身份信息，请稍等...");
                 setEditText(mReadTime, "readTime: 读卡：" + (System.currentTimeMillis() - timeMillis) + "ms,  请求解码：");
                 //通过card_id请求识读卡片的信息
                 setEditText(mRequestId, "reqId:" + msg);
-                getTravelCardInfo(msg);
+                setEditText(mState, "读卡成功，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
                 break;
             case EidConstants.READ_CARD_FAILED:
                 Log.d(TAG, "process-------->READ_CARD_FAILED");
@@ -398,24 +399,7 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
             });
             return;
         }
-        final long readStart = System.currentTimeMillis();
-        EidSDK.getIDCardInfo(id, appid, appkey, new EidCall() {
-            @Override
-            public void onCallData(int code, String msg) {
-                if (code == 10000) {
-                    ResultInfo result = new Gson().fromJson(msg, ResultInfo.class);
-                    Log.e(TAG, "888888 resultcode 200,result = " + result.toString());
-                    setEditText(mReadTime, String.format(Locale.getDefault(), "%s%dms", mReadTime.getText().toString(),
-                            (System.currentTimeMillis() - readStart)));
-                    if (result.code == 0) {
-                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
-                        parseData(result);
-                    } else {
-                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
-                    }
-                }
-            }
-        });
+
     }
 
     private void parseData(final ResultInfo data) {

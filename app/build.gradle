@@ -3,11 +3,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 30
     defaultConfig {
+        multiDexEnabled true
         applicationId "com.sunmi.readidcardemo"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 5
-        versionName "1.0.5"
+        versionCode 6
+        versionName "1.0.6"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     lintOptions {
@@ -57,6 +58,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.2.0'
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
     implementation project(path: ':SunmiEID-SDK')
+    implementation 'com.sunmi:SunmiHttpLib:1.0.35'
     implementation project(path: ':PayLib-release')
 
     /**
