@@ -1,1 +1,1 @@
-include ':app', ':SunmiEID-SDK', ':PayLib-release'
+include ':app', ':PayLib-release'

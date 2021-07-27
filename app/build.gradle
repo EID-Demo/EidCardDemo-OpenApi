@@ -57,9 +57,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.4.0'
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.2.0'
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
-    implementation project(path: ':SunmiEID-SDK')
-    implementation 'com.sunmi:SunmiHttpLib:1.0.35'
     implementation project(path: ':PayLib-release')
+    implementation "com.sunmi:SunmiEID-SDK:1.2.2"
+
 
     /**
      * 图片解码库

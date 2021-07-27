@@ -302,13 +302,13 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 setEditText(mState, String.format(Locale.getDefault(), "延迟 %sms", msg));
                 break;
             //初始化成功
-            case 1:
+            case EidConstants.EID_INIT_SUCCESS:
                 init = true;
                 initEidReader();
-            case 5001://请检查套餐
-            case 4001://appId参数错误/未初始化
-            case 4002://解析域名异常
-            case 4003://网络连接异常
+            case EidConstants.ERR_ACCOUNT_EXCEPTION://请检查套餐
+            case EidConstants.ERR_APP_ID_NULL://appId参数错误/未初始化
+            case EidConstants.ERR_DNS_EXCEPTION://解析域名异常
+            case EidConstants.ERR_NETWORK_EXCEPTION://网络连接异常
             default:
                 setEditText(mState, code + ":" + msg);
                 break;
