@@ -2,6 +2,8 @@
 
 > This project demo is use Open Api.
 
-> 商米 NFC EidCardDemo-OpenApi（直连商米open api服务器，不推荐使用该方式，该用法可能会导致appid与appkey泄漏，造成损失将由应用商自己承担）
+> 商米 NFC EidCardDemo-OpenApi
 
-> 推荐使用 [EidCardDemo](https://github.com/EID-Demo/EIDCardDemo)
+> 分支 develop_V2 为 v2的sdk，推荐使用
+
+> 分支 develop_V1 为 v1的sdk，不推荐使用
