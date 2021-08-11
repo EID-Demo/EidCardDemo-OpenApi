@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
 
     private void initEidReader() {
         try {
-            eid = EidSDK.getEidReaderForNfc(1, this);
+            eid = EidSDK.getEidReaderForNfc(3, this);
         } catch (Exception e) {
             mState.setText(e.getMessage());
         }
