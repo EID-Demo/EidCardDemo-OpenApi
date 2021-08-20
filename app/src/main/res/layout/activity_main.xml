@@ -137,7 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -186,8 +186,7 @@
             android:layout_marginTop="10dp"
             android:text="出生年月："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/address"
@@ -195,8 +194,7 @@
             android:layout_height="wrap_content"
             android:text="地址："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp"/>
 
         <TextView
             android:id="@+id/number"
@@ -204,8 +202,7 @@
             android:layout_height="wrap_content"
             android:text="身份证号码："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
 
         <TextView
@@ -214,8 +211,7 @@
             android:layout_height="wrap_content"
             android:text="签发机关："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp"/>
 
         <TextView
             android:id="@+id/start"
@@ -223,8 +219,7 @@
             android:layout_height="wrap_content"
             android:text="有效起始时间："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/end"
@@ -232,8 +227,7 @@
             android:layout_height="wrap_content"
             android:text="有效结束时间："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/appeidcode"
@@ -241,8 +235,7 @@
             android:layout_height="wrap_content"
             android:text="appeidcode："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/dn"
@@ -250,8 +243,7 @@
             android:layout_height="wrap_content"
             android:text="DN码："
             android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:textSize="15sp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

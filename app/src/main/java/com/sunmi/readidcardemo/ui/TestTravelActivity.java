@@ -31,19 +31,41 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.gson.Gson;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidReader;
 import com.sunmi.eidlibrary.EidSDK;
+import com.sunmi.readidcardemo.BuildConfig;
 import com.sunmi.readidcardemo.R;
 import com.sunmi.readidcardemo.bean.BaseInfo;
+import com.sunmi.readidcardemo.bean.DecodeRequest;
+import com.sunmi.readidcardemo.bean.Result;
 import com.sunmi.readidcardemo.bean.ResultInfo;
+import com.sunmi.readidcardemo.utils.DesUtils;
+import com.sunmi.readidcardemo.utils.SignatureUtils;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * 读取旅行证件:护照，港澳通行证
@@ -354,6 +376,8 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
                 //通过card_id请求识读卡片的信息
                 setEditText(mRequestId, "reqId:" + msg);
                 setEditText(mState, "读卡成功，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
+                // *** 这里代码只为展示后续流程，实际开发需接入方后台根据文档自行开发 ***
+                mockServerDecode(msg);
                 break;
             case EidConstants.READ_CARD_FAILED:
                 Log.d(TAG, "process-------->READ_CARD_FAILED");
@@ -389,17 +413,89 @@ public class TestTravelActivity extends AppCompatActivity implements EidCall {
         });
     }
 
-    private void getTravelCardInfo(String id) {
-        if (appid == null || appkey == null || !init) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(TestTravelActivity.this, "请先初始化", Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
+    /**
+     * 模拟接入方服务器发起请求，仅做演示，非示例代码
+     *
+     * @param reqId
+     */
+    @Deprecated
+    private void mockServerDecode(String reqId) {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> Log.d("http", message));
+        logging.level(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                .addNetworkInterceptor(logging)
+                .build();
+        String json;
+        Gson gson = new Gson();
+        DecodeRequest requestBean = new DecodeRequest();
+        requestBean.request_id = reqId;
+        // 实际开发 随机8位加密因子
+        requestBean.encrypt_factor = "abc12345";
+        json = gson.toJson(requestBean);
+        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), json);
+        long timeStamp = System.currentTimeMillis() / 1000;
+        // 实际开发 6位随机数
+        String nonce = "111111";
+        String stringA = json + appid + timeStamp + nonce;
+        String sign = SignatureUtils.generateHashWithHmac256(stringA, appkey);
+        Request request = new Request
+                .Builder()
+                .url(BuildConfig.OPEN_API_HOST + "v2/eid/eid/idcard/decode")
+                .addHeader("Sunmi-Timestamp", timeStamp + "")
+                .addHeader("Sunmi-Sign", sign)
+                .addHeader("Sunmi-Appid", appid)
+                .addHeader("Sunmi-Nonce", nonce)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+            }
 
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                Result result = new Result();
+
+                JSONObject object;
+                try {
+                    object = new JSONObject(response.body().string());
+                    result.code = object.getInt("code");
+                    if (object.has("msg")) {
+                        result.msg = object.getString("msg");
+                    }
+                    if (result.code == 1) {
+                        JSONObject object1 = object.getJSONObject("data");
+                        Result.Data data = new Result.Data();
+                        data.info = object1.getString("info");
+                        result.data = data;
+                    } else {
+                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
+                        return;
+                    }
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+                    return;
+                }
+//                    result = gson.fromJson(response.body().string(), Result.class);
+                setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
+                byte[] stringA = Base64.decode(result.data.info.getBytes(), Base64.DEFAULT);
+                String stringB;
+                try {
+                    stringB = new String(DesUtils.decode(appkey.substring(0, 8), stringA, requestBean.encrypt_factor));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+                    return;
+                }
+                ResultInfo finalInfo = gson.fromJson(stringB, ResultInfo.class);
+                parseData(finalInfo);
+            }
+        });
     }
 
     private void parseData(final ResultInfo data) {

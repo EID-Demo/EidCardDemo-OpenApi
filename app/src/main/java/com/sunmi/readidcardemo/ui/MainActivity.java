@@ -14,6 +14,7 @@ import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.gson.Gson;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidReadCardCallBack;
@@ -36,20 +38,40 @@ import com.sunmi.eidlibrary.IDCardType;
 import com.sunmi.pay.hardware.aidl.AidlConstants;
 import com.sunmi.pay.hardware.aidlv2.AidlConstantsV2;
 import com.sunmi.pay.hardware.aidlv2.readcard.CheckCardCallbackV2;
+import com.sunmi.readidcardemo.BuildConfig;
 import com.sunmi.readidcardemo.R;
 import com.sunmi.readidcardemo.bean.BaseInfo;
+import com.sunmi.readidcardemo.bean.DecodeRequest;
+import com.sunmi.readidcardemo.bean.Result;
 import com.sunmi.readidcardemo.bean.ResultInfo;
 import com.sunmi.readidcardemo.utils.ByteUtils;
+import com.sunmi.readidcardemo.utils.DesUtils;
+import com.sunmi.readidcardemo.utils.SignatureUtils;
 import com.sunmi.readidcardemo.utils.Utils;
 import com.zkteco.android.IDReader.IDCardPhoto;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import sunmi.paylib.SunmiPayKernel;
 
 public class MainActivity extends AppCompatActivity implements EidCall {
@@ -95,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     private PendingIntent pi;
     private NfcAdapter nfcAdapter;
 
-    public static String appid = "0be4fe0ce423fa332546280e13a5132f";
-    public static String appkey = "bb2b161e270636de647f858151a4378f";
+    public static String appid = "b04f7ede49644a1ebf0b6b4194c8d983";//test
+    public static String appkey = "696d52a837a4481ca5a14c8f97b1955c";
 
     private boolean init;
     private int readType = IDCardType.IDCARD;
@@ -192,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements EidCall {
     }
 
 
+    @SuppressLint("MissingSuperCall")
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == 81 && grantResults != null && grantResults.length > 0) {
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {// Permission Granted
@@ -290,7 +313,11 @@ public class MainActivity extends AppCompatActivity implements EidCall {
                 //通过card_id请求识读卡片的信息
                 Log.d(TAG, "onCallData: reqId:" + msg);
                 setEditText(mRequestId, "reqId:" + msg);
-                setEditText(mState, "读卡成功，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/");
+                //==== 读卡成功后，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/" ====
+                //==== 读卡成功后，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/"=====
+                //==== 读卡成功后，解析卡信息请使用sunmi云对云方案：https://docs.sunmi.com/eidapi/3/"=====
+                // *** 这里代码只为展示后续流程，实际开发需接入方后台根据文档自行开发 ***
+                mockServerDecode(msg);
                 break;
             case EidConstants.READ_CARD_FAILED:
                 closeNFCReader();//电子身份证需要关闭
@@ -315,14 +342,94 @@ public class MainActivity extends AppCompatActivity implements EidCall {
         }
     }
 
-    private void setEditText(final TextView textView, final String text) {
-        Log.i(TAG, text);
-        runOnUiThread(new Runnable() {
+    /**
+     * 模拟接入方服务器发起请求，仅做演示，非示例代码
+     *
+     * @param reqId
+     */
+    @Deprecated
+    private void mockServerDecode(String reqId) {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> Log.d("http", message));
+        logging.level(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                .addNetworkInterceptor(logging)
+                .build();
+        String json;
+        Gson gson = new Gson();
+        DecodeRequest requestBean = new DecodeRequest();
+        requestBean.request_id = reqId;
+        // 实际开发 随机8位加密因子
+        requestBean.encrypt_factor = "abc12345";
+        json = gson.toJson(requestBean);
+        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), json);
+        long timeStamp = System.currentTimeMillis() / 1000;
+        // 实际开发 6位随机数
+        String nonce = "111111";
+        String stringA = json + appid + timeStamp + nonce;
+        String sign = SignatureUtils.generateHashWithHmac256(stringA, appkey);
+        Request request = new Request
+                .Builder()
+                .url(BuildConfig.OPEN_API_HOST + "v2/eid/eid/idcard/decode")
+                .addHeader("Sunmi-Timestamp", timeStamp + "")
+                .addHeader("Sunmi-Sign", sign)
+                .addHeader("Sunmi-Appid", appid)
+                .addHeader("Sunmi-Nonce", nonce)
+                .post(body)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                textView.setText(text);
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                Result result = new Result();
+
+                JSONObject object;
+                try {
+                    object = new JSONObject(response.body().string());
+                    result.code = object.getInt("code");
+                    if (object.has("msg")) {
+                        result.msg = object.getString("msg");
+                    }
+                    if (result.code == 1) {
+                        JSONObject object1 = object.getJSONObject("data");
+                        Result.Data data = new Result.Data();
+                        data.info = object1.getString("info");
+                        result.data = data;
+                    } else {
+                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
+                        return;
+                    }
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+                    return;
+                }
+//                    result = gson.fromJson(response.body().string(), Result.class);
+                setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
+                byte[] stringA = Base64.decode(result.data.info.getBytes(), Base64.DEFAULT);
+                String stringB;
+                try {
+                    stringB = new String(DesUtils.decode(appkey.substring(0, 8), stringA, requestBean.encrypt_factor));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
+                    return;
+                }
+                ResultInfo finalInfo = gson.fromJson(stringB, ResultInfo.class);
+                parseData(finalInfo);
             }
         });
+    }
+
+    private void setEditText(final TextView textView, final String text) {
+        Log.i(TAG, text);
+        runOnUiThread(() -> textView.setText(text));
     }
 
     private void parseData(ResultInfo data) {
