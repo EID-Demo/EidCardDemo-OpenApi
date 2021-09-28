@@ -57,4 +57,10 @@ public class MainListActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EidSDK.destroy();
+    }
 }
