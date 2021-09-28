@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.MainListActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="appid:" />
+
+        <EditText
+            android:id="@+id/et_appid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入APPID"
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
+    <Button
+        android:id="@+id/btn_init"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onViewClicked"
+        android:text="初始化SDK" />
+
+    <Button
+        android:id="@+id/btn_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onViewClicked"
+        android:text="NFC识别身份证" />
+
+    <Button
+        android:id="@+id/btn_travel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onViewClicked"
+        android:text="NFC识别旅行证件" />
+
+    <Button
+        android:id="@+id/btn_destory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onViewClicked"
+        android:text="销毁SDK" />
+</LinearLayout>

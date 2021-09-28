@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sunmi.readidcardemo">
-
     <!-- 金融设备非接卡读卡权限 -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="com.sunmi.perm.CONTACTLESS_CARD" />
@@ -17,7 +16,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.sunmi.readidcardemo.ui.MainActivity"
+            android:name=".ui.MainListActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,8 +24,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ui.TestTravelActivity" />
+        <activity
+            android:name=".ui.ReadTravelActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.ReadCardActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.BaseDecodeActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
