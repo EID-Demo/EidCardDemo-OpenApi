@@ -9,6 +9,7 @@ import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidSDK;
 import com.sunmi.readidcardemo.R;
+import com.sunmi.readidcardemo.bean.ResultInfo;
 
 import java.util.Locale;
 
@@ -69,6 +70,9 @@ public class ReadCardActivity extends BaseDecodeActivity {
         }
     }
 
+    private long lastTime;
+    private boolean isStart;
+
     private void startCheckCard() {
         //Step 2 开启读卡 -> 调用startCheckCard方法，通过回调结果处理业务逻辑
         //注：默认循环读卡，只会回调一次EidConstants.READ_CARD_READY
@@ -99,30 +103,47 @@ public class ReadCardActivity extends BaseDecodeActivity {
                         break;
                     case EidConstants.READ_CARD_START:
                         //Step 4 读卡中 -> 业务方可以提醒用户"读卡中，请勿移动卡片"
+                        if (!isStart) {
+                            lastTime = System.currentTimeMillis();
+                            isStart = true;
+                        }
                         Log.e(TAG, "开始读卡，请勿移动");
                         clearData();
                         setEditText(mState, "开始读卡，请勿移动");
                         break;
                     case EidConstants.READ_CARD_SUCCESS:
+                        isStart = false;
                         //Step 5 读卡成功 -> 返回的msg为reqId，通过 reqId 业务方走云对云方案获取身份证信息
                         //注：如不需要循环读卡，可在此处调用stopCheckCard方法
                         Log.e(TAG, "读卡成功，reqId：" + msg);
-                        setEditText(mRequestId, String.format("reqId:%s", msg));
+                        String time = String.valueOf(System.currentTimeMillis() - lastTime);
+                        lastTime = System.currentTimeMillis();
+                        setEditText(mRequestId, String.format("reqId:%s", msg) + ",time:" + time);
                         mockServerDecode(msg);
                         break;
                     case EidConstants.READ_CARD_FAILED:
+                        isStart = false;
                         //*** 异常处理： 读卡失败，请重新读卡 ***
                         Log.e(TAG, "读卡失败：" + msg);
                         setEditText(mState, String.format(Locale.getDefault(), "读卡错误,请重新贴卡：%s", msg));
                         break;
                     default:
+                        isStart = false;
                         //*** 异常处理： 其他失败 - code为错误码，msg为详细错误原因 需要重新调用 startCheckCard 方法 （手动触发，非自动）***
                         Log.e(TAG, "读卡失败：code:" + code + ",msg:" + msg);
                         setEditText(mState, String.format(Locale.getDefault(), "其他错误：%d,%s", code, msg));
                         break;
                 }
+
             }
         });
     }
 
+    @Override
+    protected void parseData(ResultInfo data) {
+        super.parseData(data);
+        String time = String.valueOf(System.currentTimeMillis() - lastTime);
+        lastTime = System.currentTimeMillis();
+        setEditText(mName, mName.getText().toString() + ",time:" + time);
+    }
 }

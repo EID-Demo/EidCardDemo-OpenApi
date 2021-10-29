@@ -210,7 +210,7 @@ public class BaseDecodeActivity extends AppCompatActivity {
 
     }
 
-    private void parseData(ResultInfo data) {
+    protected void parseData(ResultInfo data) {
         //Step 6 解析身份证数据，这里业务方根据自己接口的返回来解析，如需解析身份证图片 可调用 EidSDK.parseCardPhoto() 方法
         try {
             BaseInfo info = data.info;
