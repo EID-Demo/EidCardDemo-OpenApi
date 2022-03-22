@@ -1,6 +1,6 @@
 # ReadIDCardDemo
 
-> 新版身份证云识别分支为：develop_v2_new
+> 新版身份证云识别分支为：develop_v2
 
 ### 新版接口相对老版本的改进:
 
@@ -12,7 +12,7 @@
 
 ```
 //新版SDK 只需要集成这一个包即可完成所有流程
-implementation "com.sunmi:SunmiEID-SDK:1.3.2"
+implementation "com.sunmi:SunmiEID-SDK:1.3.7"
 ```
 
 ### 接口说明：
@@ -62,6 +62,12 @@ implementation "com.sunmi:SunmiEID-SDK:1.3.2"
    > 释放对象引用，appid等，调用此接口后，再使用需要重新初始化
 
 ​     `EidSDK.destroy()`
+
+7. SDK提供的解码方法
+
+   > 根据读卡获取到的reqid解码身份证信息（建议使用云对云方案），具体使用见demo源码
+   
+​     `EidSDK.getIDCardInfo(String reqId, String appKey, EidCall call)`
 
 ### 接口使用示例代码
 
@@ -166,5 +172,23 @@ implementation "com.sunmi:SunmiEID-SDK:1.3.2"
        super.onDestroy();
        EidSDK.destroy();
    }
+   ```
+   
+5. 身份证解码
+   ```java
+   EidSDK.getIDCardInfo(reqId, Constant.APP_KEY, new EidCall() {
+            @Override
+            public void onCallData(int code, String data) {
+                //EidConstants.DECODE_SUCCESS -> 解码成功，data为身份证信息的gson格式，可直接解析成SDK中提供的 ResultInfo 实体类
+                if (code == EidConstants.DECODE_SUCCESS) {
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", code, data));
+                    ResultInfo result = new Gson().fromJson(data, ResultInfo.class);
+                    parseData(result);
+                } else {
+                    //解码失败，code 为错误吗，data为错误原因
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", code, data));
+                }
+            }
+        });
    ```
 

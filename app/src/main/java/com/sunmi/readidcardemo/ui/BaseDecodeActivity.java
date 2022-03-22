@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,37 +22,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
+import com.sunmi.eidlibrary.EidCall;
+import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidSDK;
-import com.sunmi.readidcardemo.BuildConfig;
+import com.sunmi.eidlibrary.bean.BaseInfo;
+import com.sunmi.eidlibrary.bean.ResultInfo;
 import com.sunmi.readidcardemo.Constant;
 import com.sunmi.readidcardemo.R;
-import com.sunmi.readidcardemo.bean.BaseInfo;
-import com.sunmi.readidcardemo.bean.DecodeRequest;
-import com.sunmi.readidcardemo.bean.Result;
-import com.sunmi.readidcardemo.bean.ResultInfo;
-import com.sunmi.readidcardemo.utils.DesUtils;
-import com.sunmi.readidcardemo.utils.SignatureUtils;
 
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.Collections;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * 封装了读卡后的decode动作，这里的逻辑请放在云端，使用云对云方案
@@ -125,89 +105,28 @@ public class BaseDecodeActivity extends AppCompatActivity {
     }
 
     /**
-     * 模拟接入方服务器发起请求，仅做演示，非示例代码
+     * 调用SDK提供的解码方法，存在泄漏key的风险，建议使用云对云方案
      *
      * @param reqId
      */
     @Deprecated
-    public void mockServerDecode(String reqId) {
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> Log.d("http", message));
-        logging.level(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-                .addNetworkInterceptor(logging)
-                .build();
-        String json;
-        Gson gson = new Gson();
-        DecodeRequest requestBean = new DecodeRequest();
-        requestBean.request_id = reqId;
-        // 实际开发 随机8位加密因子
-        requestBean.encrypt_factor = "abc12345";
-        json = gson.toJson(requestBean);
-        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), json);
-        long timeStamp = System.currentTimeMillis() / 1000;
-        // 实际开发 6位随机数
-        String nonce = "111111";
-        String stringA = json + Constant.APP_ID + timeStamp + nonce;
-        String sign = SignatureUtils.generateHashWithHmac256(stringA, Constant.APP_KEY);
-        Request request = new Request
-                .Builder()
-                .url(BuildConfig.OPEN_API_HOST + "v2/eid/eid/idcard/decode")
-                .addHeader("Sunmi-Timestamp", timeStamp + "")
-                .addHeader("Sunmi-Sign", sign)
-                .addHeader("Sunmi-Appid", Constant.APP_ID)
-                .addHeader("Sunmi-Nonce", nonce)
-                .post(body)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
+    public void decode(String reqId) {
+        //调用SDK的解码，存在泄漏key的风险，建议使用云对云方案
+        //传入读卡获取的reqId，商米partner平台上的appkey，以及结果callback
+        EidSDK.getIDCardInfo(reqId, Constant.APP_KEY, new EidCall() {
             @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                Result result = new Result();
-
-                JSONObject object;
-                try {
-                    object = new JSONObject(response.body().string());
-                    result.code = object.getInt("code");
-                    if (object.has("msg")) {
-                        result.msg = object.getString("msg");
-                    }
-                    if (result.code == 1) {
-                        JSONObject object1 = object.getJSONObject("data");
-                        Result.Data data = new Result.Data();
-                        data.info = object1.getString("info");
-                        result.data = data;
-                    } else {
-                        setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", result.code, result.msg));
-                        return;
-                    }
-                } catch (JSONException | IOException e) {
-                    e.printStackTrace();
-                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
-                    return;
+            public void onCallData(int code, String data) {
+                //EidConstants.DECODE_SUCCESS 解码成功，data为身份证信息的gson格式，可直接解析成SDK中提供的 ResultInfo 实体类
+                if (code == EidConstants.DECODE_SUCCESS) {
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", code, data));
+                    ResultInfo result = new Gson().fromJson(data, ResultInfo.class);
+                    parseData(result);
+                } else {
+                    //解码失败，code 为错误吗，data为错误原因
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试(%d:%s)", code, data));
                 }
-//                    result = gson.fromJson(response.body().string(), Result.class);
-                setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", result.code, result.msg));
-                byte[] stringA = Base64.decode(result.data.info.getBytes(), Base64.DEFAULT);
-                String stringB;
-                try {
-                    stringB = new String(DesUtils.decode(Constant.APP_KEY.substring(0, 8), stringA, requestBean.encrypt_factor));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析失败，请重试:" + e.getMessage()));
-                    return;
-                }
-                ResultInfo finalInfo = gson.fromJson(stringB, ResultInfo.class);
-                parseData(finalInfo);
             }
         });
-
     }
 
     protected void parseData(ResultInfo data) {

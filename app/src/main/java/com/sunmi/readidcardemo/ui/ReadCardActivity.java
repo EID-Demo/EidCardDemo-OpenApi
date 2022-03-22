@@ -8,8 +8,8 @@ import com.eidlink.idocr.sdk.listener.OnGetDelayListener;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidSDK;
+import com.sunmi.eidlibrary.bean.ResultInfo;
 import com.sunmi.readidcardemo.R;
-import com.sunmi.readidcardemo.bean.ResultInfo;
 
 import java.util.Locale;
 
@@ -84,6 +84,7 @@ public class ReadCardActivity extends BaseDecodeActivity {
                     case EidConstants.ERR_NFC_NOT_SUPPORT:
                         Log.e(TAG, "机器不支持NFC");
                         // 该机器不支持NFC功能，无法使用SDK
+                        setEditText(mState, String.format(Locale.getDefault(), "机器不支持NFC"));
                         break;
                     case EidConstants.ERR_NETWORK_NOT_CONNECTED:
                         Log.e(TAG, "网络未连接，连接网络后重新调用 startCheckCard 方法");
@@ -119,7 +120,7 @@ public class ReadCardActivity extends BaseDecodeActivity {
                         String time = String.valueOf(System.currentTimeMillis() - lastTime);
                         lastTime = System.currentTimeMillis();
                         setEditText(mRequestId, String.format("reqId:%s", msg) + ",time:" + time);
-                        mockServerDecode(msg);
+                        decode(msg);
                         break;
                     case EidConstants.READ_CARD_FAILED:
                         isStart = false;

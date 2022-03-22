@@ -122,7 +122,7 @@ public class ReadTravelActivity extends BaseDecodeActivity {
                         //注：如不需要循环读卡，可在此处调用stopCheckCard方法
                         Log.e(TAG, "读卡成功，reqId：" + msg);
                         setEditText(mRequestId, String.format("reqId:%s", msg));
-                        mockServerDecode(msg);
+                        decode(msg);
                         break;
                     case EidConstants.READ_CARD_FAILED:
                         //*** 异常处理： 读卡失败，请重新读卡 ***
