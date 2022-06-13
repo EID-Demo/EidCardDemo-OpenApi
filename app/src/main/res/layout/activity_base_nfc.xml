@@ -65,6 +65,14 @@
                 android:textSize="15sp" />
         </LinearLayout>
 
+        <CheckBox
+            android:id="@+id/is_need_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="是否需要获取身份证图片"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/ll_travel"
             android:layout_width="match_parent"

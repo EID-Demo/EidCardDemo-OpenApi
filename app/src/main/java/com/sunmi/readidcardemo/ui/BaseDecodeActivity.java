@@ -93,6 +93,12 @@ public class BaseDecodeActivity extends AppCompatActivity {
     @BindView(R.id.tv_read_time)
     TextView mReadTime;
 
+    @BindView(R.id.is_need_picture)
+    public CheckBox mIsNeedPicture;
+
+    public long timeMillis;
+    public long readCardTimeMillis;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,7 +124,7 @@ public class BaseDecodeActivity extends AppCompatActivity {
             public void onCallData(int code, String data) {
                 //EidConstants.DECODE_SUCCESS 解码成功，data为身份证信息的gson格式，可直接解析成SDK中提供的 ResultInfo 实体类
                 if (code == EidConstants.DECODE_SUCCESS) {
-                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d:%s", code, data));
+                    setEditText(mState, String.format(Locale.getDefault(), "身份证解析成功，业务状态：%d", code));
                     ResultInfo result = new Gson().fromJson(data, ResultInfo.class);
                     parseData(result);
                 } else {
@@ -145,7 +151,8 @@ public class BaseDecodeActivity extends AppCompatActivity {
             setEditText(mAppEidCode, String.format("appeidcode：%s", data.appeidcode));
             setEditText(mDn, String.format("DN码：%s", data.dn));
 
-            if (data != null && !TextUtils.isEmpty(data.picture)) {
+            //注：这里如果不读取身份证照片，picture会有个默认值，需要特殊处理
+            if (data != null && !TextUtils.isEmpty(data.picture) && data.picture.length() != 1) {
                 final Bitmap bt = EidSDK.parseCardPhoto(data.picture);
                 if (bt != null) {
                     runOnUiThread(new Runnable() {
@@ -158,7 +165,8 @@ public class BaseDecodeActivity extends AppCompatActivity {
 
                 }
             }
-
+            setEditText(mReadTime, String.format(Locale.getDefault(), "readTime: 读卡：%dms;请求解码%dms;总：%dms",
+                    readCardTimeMillis, (System.currentTimeMillis() - timeMillis - readCardTimeMillis), (System.currentTimeMillis() - timeMillis)));
         } catch (Exception e) {
             e.printStackTrace();
         }
