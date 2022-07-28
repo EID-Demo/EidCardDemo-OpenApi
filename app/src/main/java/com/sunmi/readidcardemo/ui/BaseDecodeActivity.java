@@ -87,7 +87,7 @@ public class BaseDecodeActivity extends AppCompatActivity {
     @BindView(R.id.request_id)
     TextView mRequestId;
     @BindView(R.id.app_id)
-    EditText mAppId;
+    TextView mAppId;
     @BindView(R.id.app_key)
     EditText mAppKey;
     @BindView(R.id.tv_read_time)

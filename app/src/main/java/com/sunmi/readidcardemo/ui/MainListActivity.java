@@ -33,11 +33,12 @@ public class MainListActivity extends AppCompatActivity {
             case R.id.btn_init:
                 EidSDK.setDebuggable(true);
 //                EidSDK.setDebug(EidSDK.TEST_MODE);
-                if (TextUtils.isEmpty(mAppidEt.getEditableText().toString())) {
+                if (TextUtils.isEmpty(mAppidEt.getText().toString())) {
                     mStatusTv.setText("请输入APPID");
                 } else {
+                    Constant.APP_ID = mAppidEt.getText().toString();
                     //这里可在application里初始化
-                    EidSDK.init(getApplicationContext(), mAppidEt.getEditableText().toString(), new EidCall() {
+                    EidSDK.init(getApplicationContext(), mAppidEt.getText().toString(), new EidCall() {
                         @Override
                         public void onCallData(int code, String msg) {
                             mStatusTv.setText("初始化：" + code + ",msg: " + msg);

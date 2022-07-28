@@ -1,6 +1,7 @@
 package com.sunmi.readidcardemo.ui;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -8,6 +9,7 @@ import com.eidlink.idocr.sdk.listener.OnGetDelayListener;
 import com.sunmi.eidlibrary.EidCall;
 import com.sunmi.eidlibrary.EidConstants;
 import com.sunmi.eidlibrary.EidSDK;
+import com.sunmi.readidcardemo.Constant;
 import com.sunmi.readidcardemo.R;
 
 import java.util.HashMap;
@@ -50,6 +52,9 @@ public class ReadTravelActivity extends BaseDecodeActivity {
         switch (view.getId()) {
             case R.id.start_read_card:
                 clearData();
+                if (!TextUtils.isEmpty(mAppKey.getText().toString())) {
+                    Constant.APP_KEY = mAppKey.getText().toString();
+                }
                 startCheckCard();
                 break;
             case R.id.stop:
