@@ -4,9 +4,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -153,7 +155,15 @@ public class BaseDecodeActivity extends AppCompatActivity {
 
             //注：这里如果不读取身份证照片，picture会有个默认值，需要特殊处理
             if (data != null && !TextUtils.isEmpty(data.picture) && data.picture.length() != 1) {
-                final Bitmap bt = EidSDK.parseCardPhoto(data.picture);
+                Bitmap bt;
+                //旅行证件是base64格式图片，直接解析
+                if (isTravel()) {
+                    byte[] decodedBytes = Base64.decode(data.picture, Base64.DEFAULT);
+                    bt = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                } else {
+                    //证件类需要使用SDK方法解析
+                    bt = EidSDK.parseCardPhoto(data.picture);
+                }
                 if (bt != null) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -170,6 +180,10 @@ public class BaseDecodeActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    protected boolean isTravel() {
+        return false;
     }
 
     @SuppressLint("SetTextI18n")

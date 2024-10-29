@@ -47,6 +47,11 @@ public class ReadTravelActivity extends BaseDecodeActivity {
 //        EidSDK.stopCheckCard(ReadTravelActivity.this);
     }
 
+    @Override
+    protected boolean isTravel() {
+        return true;
+    }
+
     @OnClick({R.id.start_read_card, R.id.delay, R.id.stop})
     public void onViewClicked(View view) {
         switch (view.getId()) {
