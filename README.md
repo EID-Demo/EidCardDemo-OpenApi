@@ -12,7 +12,7 @@
 
 ```
 //新版SDK 只需要集成这一个包即可完成所有流程
-implementation "com.sunmi:SunmiEID-SDK:1.3.7"
+implementation "com.sunmi:SunmiEID-SDK:1.3.22"
 ```
 
 ### 接口说明：
